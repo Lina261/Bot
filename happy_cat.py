@@ -2,20 +2,14 @@ from PIL import Image
 from telebot import TeleBot
 from telebot import types
 import requests
-import shutil
-
 from io import BytesIO
 
+name = ''
 cats_url = 'https://cataas.com/cat'
 
 bot = TeleBot()
 mood = {'angry': 'Злое', 'sad': 'Грустное', 'anxious': 'Тревожное', 'depressed': 'Подавленное',
         'joyful': 'Радостное', 'calm': 'Спокойное'}
-
-
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, "Howdy, how are you doing?")
 
 
 @bot.message_handler(func=lambda m: True)
@@ -25,6 +19,7 @@ def echo_all(message):
 
 
 def ask_about_mood(message):
+    global name
     name = message.text
     keyboard = types.InlineKeyboardMarkup()
     for k, v in mood.items():
@@ -33,13 +28,15 @@ def ask_about_mood(message):
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback_worker(call):
-        print(call.data)
-        response = requests.get(cats_url)
-        img = Image.open(BytesIO(response.content))
+        try:
+            response = requests.get(cats_url)
+            img = Image.open(BytesIO(response.content))
+        except requests.exceptions.ConnectionError as e:
+            raise SystemExit(e)
         bot.send_photo(photo=img, chat_id=call.message.chat.id, caption=generate_advice(call.data))
 
     def generate_advice(user_mood):
-        print(user_mood)
+        pass
 
 
 bot.polling()
