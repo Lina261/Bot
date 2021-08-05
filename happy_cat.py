@@ -3,6 +3,7 @@ from telebot import TeleBot
 from telebot import types
 import requests
 from io import BytesIO
+from advice import moods
 
 name = ''
 cats_url = 'https://cataas.com/cat'
@@ -36,7 +37,8 @@ def ask_about_mood(message):
         bot.send_photo(photo=img, chat_id=call.message.chat.id, caption=generate_advice(call.data))
 
     def generate_advice(user_mood):
-        pass
+        advice = moods.get(user_mood)
+        return f'{name}, {advice}'
 
 
 bot.polling()
